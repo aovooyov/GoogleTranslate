@@ -1,7 +1,7 @@
 # Google Translate
 
 <p align="center">
-  <img width="600" alt="Screenshot 2019-12-30 at 01 47 19" src="https://user-images.githubusercontent.com/22943912/71563873-f36af700-2aa7-11ea-9647-448dd8144cb5.png">
+  <img width="532" alt="Screenshot 2025-06-17 at 11 36 58 PM" src="https://github.com/user-attachments/assets/e076105d-c615-4067-8e58-9a13b92a3247" />
   <p align="center"><a href="https://github.com/dbilgili/GoogleTranslate/releases/download/1.0.2/Translator-1.0.2.dmg.zip">Download the latest version</a><p>
 </p>
 
