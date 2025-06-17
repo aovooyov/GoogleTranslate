@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-const { Tray, Menu, globalShortcut } = require('electron');
+const { Tray, Menu, globalShortcut, screen } = require('electron');
 const path = require('path');
 
 class TrayGenerator {
@@ -9,27 +9,51 @@ class TrayGenerator {
     this.store = store;
   }
 
-  getWindowPosition = () => {
+  getWindowPosition() {
     const windowBounds = this.mainWindow.getBounds();
     const trayBounds = this.tray.getBounds();
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const screenBounds = primaryDisplay.workArea;
 
-    const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2));
+    // Отступ от края экрана
+    const margin = 10;
+
+    // Размещаем прямо от начала иконки (без отступа)
+    let x = Math.round(trayBounds.x);
+
+    // Если не влезает справа - размещаем по центру иконки
+    if (x + windowBounds.width > screenBounds.width - margin) {
+      x = Math.round(trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2);
+
+      // Если и по центру не влезает справа - прижимаем к правому краю
+      if (x + windowBounds.width > screenBounds.width - margin) {
+        x = screenBounds.width - windowBounds.width - margin;
+      }
+
+      // Если не влезает слева - прижимаем к левому краю
+      if (x < margin) {
+        x = margin;
+      }
+    }
+
+    // Отступ вниз от трея
     const y = Math.round(trayBounds.y + trayBounds.height);
-    return { x, y };
-  };
 
-  setWinPosition = () => {
+    return { x, y };
+  }
+
+  setWinPosition() {
     const position = this.getWindowPosition();
     this.mainWindow.setPosition(position.x, position.y, false);
   }
 
-  showWindow = () => {
+  showWindow() {
     this.mainWindow.setVisibleOnAllWorkspaces(true);
     this.mainWindow.show();
     this.mainWindow.setVisibleOnAllWorkspaces(false);
-  };
+  }
 
-  toggleWindow = () => {
+  toggleWindow() {
     if (this.mainWindow.isVisible()) {
       this.mainWindow.hide();
     } else {
@@ -37,62 +61,61 @@ class TrayGenerator {
       this.showWindow();
       this.mainWindow.focus();
     }
-  };
+  }
 
-  toggleShortcut = (event) => {
-    this.store.set('useShortcut', event)
+  toggleShortcut(event) {
+    this.store.set('useShortcut', event);
 
     if (event) {
-      globalShortcut.register('CommandOrControl+G', this.toggleWindow);
+      globalShortcut.register('CommandOrControl+G', this.toggleWindow.bind(this));
     } else {
       globalShortcut.unregister('CommandOrControl+G');
-
     }
   }
 
-  rightClickMenu = () => {
+  rightClickMenu() {
     const menu = [
       {
         label: 'Remember languages',
         type: 'checkbox',
         checked: this.store.get('rememberLanguages'),
-        click: (event) => this.store.set('rememberLanguages', event.checked),
+        click: event => this.store.set('rememberLanguages', event.checked),
       },
       {
         label: 'Clear on blur',
         type: 'checkbox',
         checked: this.store.get('clearOnBlur'),
-        click: (event) => this.store.set('clearOnBlur', event.checked),
+        click: event => this.store.set('clearOnBlur', event.checked),
       },
       {
-        type: 'separator'
+        type: 'separator',
       },
       {
         label: 'Launch at startup',
         type: 'checkbox',
         checked: this.store.get('launchAtStart'),
-        click: (event) => this.store.set('launchAtStart', event.checked),
+        click: event => this.store.set('launchAtStart', event.checked),
       },
       {
         label: 'Use CMD+G shortcut',
         type: 'checkbox',
         checked: this.store.get('useShortcut'),
-        click: (event) => this.toggleShortcut(event.checked),
+        click: event => this.toggleShortcut(event.checked),
       },
       {
-        type: 'separator'
+        type: 'separator',
       },
       {
         role: 'quit',
-        accelerator: 'Command+Q'
-      }
+        accelerator: 'Command+Q',
+      },
     ];
 
     this.tray.popUpContextMenu(Menu.buildFromTemplate(menu));
   }
 
-  createTray = () => {
-    this.tray = new Tray(path.join(__dirname, './assets/IconTemplate.png'));
+  createTray() {
+    this.tray = new Tray(path.join(__dirname, './assets/russian-hieroglyph.png'));
     this.setWinPosition();
 
     this.tray.setIgnoreDoubleClickEvents(true);
@@ -102,8 +125,8 @@ class TrayGenerator {
       this.toggleWindow();
     });
 
-    this.tray.on('right-click', this.rightClickMenu);
-  };
+    this.tray.on('right-click', this.rightClickMenu.bind(this));
+  }
 }
 
 module.exports = TrayGenerator;

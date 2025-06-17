@@ -1,25 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-    <div id="arrow"></div>
-    <div id="root">
-        <div id="loader">
-            Loading...
-        </div>
-        <webview
-            id="webview"
-            src="https://translate.google.com"
-            preload="./inject.js">
-        </webview>
-    </div>
+  <body>
+    <webview
+      id="webview"
+      src="https://translate.google.com/?sl=auto&tl=en&op=translate"
+      preload="./inject.js"
+      useragent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)
+        AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124
+        Safari/537.36"
+      allowpopups
+      nodeintegration
+      webpreferences="webSecurity=false,allowRunningInsecureContent=true"
+    >
+    </webview>
     <script src="./index.js"></script>
-</body>
+  </body>
 </html>

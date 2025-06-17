@@ -1,24 +1,16 @@
 /* eslint-disable import/no-extraneous-dependencies */
-const {
-  app,
-  BrowserWindow,
-  globalShortcut,
-  ipcMain
-} = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 
 const { is } = require('electron-util');
 
 const path = require('path');
 const Store = require('electron-store');
-const { NSEventMonitor, NSEventMask } = require('nseventmonitor');
 const TrayGenerator = require('./TrayGenerator');
 
 let mainWindow = null;
 let trayObject = null;
 
 const gotTheLock = app.requestSingleInstanceLock();
-
-const macEventMonitor = new NSEventMonitor();
 
 const store = new Store();
 
@@ -43,20 +35,25 @@ const initStore = () => {
 const createMainWindow = () => {
   mainWindow = new BrowserWindow({
     transparent: true,
-    width: 500,
-    height: 370,
+    width: 437,
+    height: 328,
     show: false,
     frame: false,
     fullscreenable: false,
-    resizable: is.development,
+    resizable: false, // Fixed size window
+    vibrancy: 'hud', // Добавляем эффект мутного стекла
+    visualEffectState: 'active',
+    // x: 100, // Фиксированная позиция X (раскомментировать при необходимости)
+    // y: 100, // Фиксированная позиция Y (раскомментировать при необходимости)
     webPreferences: {
       devTools: is.development,
       webviewTag: true,
       backgroundThrottling: false,
       nodeIntegration: true,
       contextIsolation: false,
-      enableRemoteModule: true,
-    }
+      webSecurity: false,
+      allowRunningInsecureContent: true,
+    },
   });
 
   if (is.development) {
@@ -66,18 +63,19 @@ const createMainWindow = () => {
     mainWindow.loadURL(`file://${path.join(__dirname, '../../src/client/index.html')}`);
   }
 
+  // Устанавливаем User-Agent для обхода блокировки
+  mainWindow.webContents.setUserAgent(
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+  );
+
   mainWindow.on('focus', () => {
     globalShortcut.register('Command+R', () => null);
-    macEventMonitor.start((NSEventMask.leftMouseDown || NSEventMask.rightMouseDown), () => {
-      mainWindow.hide();
-    });
-  })
+  });
 
   mainWindow.on('blur', () => {
     if (!mainWindow.webContents.isDevToolsOpened()) {
       mainWindow.hide();
       globalShortcut.unregister('Command+R');
-      macEventMonitor.stop();
     }
     if (store.get('clearOnBlur')) {
       mainWindow.webContents.send('CLEAR_TEXT_AREA');
